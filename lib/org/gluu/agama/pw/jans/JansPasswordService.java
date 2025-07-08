@@ -92,6 +92,62 @@ public class JansPasswordService extends PasswordService {
         }
         return null;
     }
+    @Override
+    public Map<String, String> getUserEntityByUsername(String username) {
+        User user = userService.getUser(username);
+        if (user == null) return null;
+
+        Map<String, String> userMap = new HashMap<>();
+        userMap.put("inum", user.getAttribute("inum"));
+        userMap.put("uid", user.getUserId());
+        userMap.put("mail", user.getAttribute("mail"));
+        userMap.put("givenName", user.getAttribute("givenName"));
+        userMap.put("sn", user.getAttribute("sn"));
+        // Add more attributes as needed
+
+        return userMap;
+    }
+
+    @Override
+    public Map<String, String> getUserEntityByInum(String inum) {
+        User user = userService.getUserByInum(inum);
+        if (user == null) return null;
+
+        Map<String, String> userMap = new HashMap<>();
+        userMap.put("inum", inum);
+        userMap.put("uid", user.getUserId());
+        userMap.put("mail", user.getAttribute("mail"));
+        userMap.put("givenName", user.getAttribute("givenName"));
+        userMap.put("sn", user.getAttribute("sn"));
+        // Add more attributes as needed
+
+        return userMap;
+    }
+
+    @Override
+    public String updateUser(Map<String, String> profile) throws Exception {
+        String inum = profile.get("inum");
+        if (inum == null || inum.isEmpty()) {
+            logger.error("Cannot update user: inum missing");
+            throw new Exception("inum is required to update user");
+        }
+
+        User user = userService.getUserByInum(inum);
+        if (user == null) {
+            logger.error("User not found for inum {}", inum);
+            throw new Exception("User not found");
+        }
+
+        for (Map.Entry<String, String> entry : profile.entrySet()) {
+            if (!"inum".equals(entry.getKey()) && entry.getValue() != null) {
+                userService.setCustomAttribute(user, entry.getKey(), entry.getValue());
+            }
+        }
+
+        userService.updateUser(user);
+        logger.info("User {} updated successfully", inum);
+        return inum;
+    }
 
     private String getCustomAttribute(User user, String attributeName) {
         CustomObjectAttribute customAttribute = userService.getCustomAttribute(user, attributeName);
