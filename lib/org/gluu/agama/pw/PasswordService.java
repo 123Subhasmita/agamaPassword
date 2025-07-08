@@ -10,6 +10,12 @@ public abstract class PasswordService {
 
     public abstract String lockAccount(String username);
 
+    public abstract String updateUser(Map<String, String> profile) throws Exception;
+
+    public abstract Map<String, String> getUserEntityByInum(String inum);
+
+    public abstract Map<String, String> getUserEntityByUsername(String username);
+
     public static PasswordService getInstance(HashMap config) {
         return new JansPasswordService(config);
     }
